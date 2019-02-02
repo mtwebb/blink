@@ -68,6 +68,7 @@ void __setupProcessEnv() {
   setenv("LC_CTYPE", "UTF-8", forceOverwrite);
   setlocale(LC_CTYPE, "UTF-8");
   setlocale(LC_ALL, "UTF-8");
+  setenv("TERM", "xterm-256color", forceOverwrite);
   
   ssh_threads_set_callbacks(ssh_threads_get_pthread());
   ssh_init();
@@ -77,8 +78,6 @@ void __setupProcessEnv() {
 {
   signal(SIGPIPE, __on_pipebroken_signal);
   
-  __setupProcessEnv();
-  
   [BlinkPaths linkICloudDriveIfNeeded];
   
   [[BKTouchIDAuthManager sharedManager] registerforDeviceLockNotif];
@@ -86,9 +85,36 @@ void __setupProcessEnv() {
   sideLoading = false; // Turn off extra commands from iOS system
   initializeEnvironment(); // initialize environment variables for iOS system
   addCommandList([[NSBundle mainBundle] pathForResource:@"blinkCommandsDictionary" ofType:@"plist"]); // Load blink commands to ios_system
+  __setupProcessEnv(); // we should call this after ios_system initializeEnvironment to override its defaults.
   
   [[ScreenController shared] setup];
   return YES;
+}
+
+- (void)_loadProfileVars {
+  NSCharacterSet *whiteSpace = [NSCharacterSet whitespaceCharacterSet];
+  NSString *profile = [NSString stringWithContentsOfFile:[BlinkPaths blinkProfileFile] encoding:NSUTF8StringEncoding error:nil];
+  [profile enumerateLinesUsingBlock:^(NSString * _Nonnull line, BOOL * _Nonnull stop) {
+    NSMutableArray<NSString *> *parts = [[line componentsSeparatedByString:@"="] mutableCopy];
+    if (parts.count < 2) {
+      return;
+    }
+    
+    NSString *varName = [parts.firstObject stringByTrimmingCharactersInSet:whiteSpace];
+    if (varName.length == 0) {
+      return;
+    }
+    [parts removeObjectAtIndex:0];
+    NSString *varValue = [[parts componentsJoinedByString:@"="] stringByTrimmingCharactersInSet:whiteSpace];
+    if ([varValue hasSuffix:@"\""] || [varValue hasPrefix:@"\""]) {
+      varValue = [varValue substringWithRange:NSMakeRange(1, varValue.length - 1)];
+    }
+    if (varValue.length == 0) {
+      return;
+    }
+    BOOL forceOverwrite = 1;
+    setenv(varName.UTF8String, varValue.UTF8String, forceOverwrite);
+  }];
 }
 
 - (BOOL)application:(UIApplication *)application willFinishLaunchingWithOptions:(NSDictionary *)launchOptions
@@ -97,6 +123,7 @@ void __setupProcessEnv() {
   [BKDefaults loadDefaults];
   [BKPubKey loadIDS];
   [BKHosts loadHosts];
+  [self _loadProfileVars];
   return YES;
 }
 

@@ -1,3 +1,39 @@
+# Version 12.5
+
+## Changes in Build 82
+
+* New ifconfig and openurl commands.
+* Fixed adding ecdsa keys to ssh-agent with ssh-add command. #681
+* New openurl command and open selected links honors BROWSER env var (googlechrome and firefox). #529
+* New load env vars from .blink/profile file.
+* New auth with keys from agent. #685
+
+Huge thanks to @holzschu, @treyharris, @TypedLambda and @lohitv9.
+
+
+# Version 12.4
+
+
+## Changes in Build 81
+
+* Fixed ssh use TERM env var for TTY. #604
+* Fixed disabled kbd interactive auth method. #667
+* Updated libssh to 0.8.6.
+* Fixed images display over ssh. #663
+* New cmd+shift+left/right shortcuts to switch terminals. #419, #496
+* Fixed umlaut with capitals. #657
+* Improved ssh pubkey authentication.
+* Improved host verification. #648.
+* Fixed command pipes. #637.
+* Fixed geo command output, so it can be redirected. #626
+* Clarify mosh configuration UI. #106
+* Increased layout lock icon tappable area.
+
+Huge thanks to @holzschu, @cjay, @jjarava, @DixonCider, @rdparker and @goerz.
+
+Special thanks to @b00giZm for hist PR!
+
+
 # Version 12.3
 
 New iPad Pro ❤️😍

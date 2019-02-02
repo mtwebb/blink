@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
 //
 // B L I N K
 //
@@ -29,32 +29,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#import <Foundation/Foundation.h>
 
-@interface BlinkPaths : NSObject
+#ifndef bk_getopts_h
+#define bk_getopts_h
 
+#include <stdio.h>
 
-+ (NSString *) documents;
-+ (NSURL *) documentsURL;
-
-+ (NSString *) iCloudDriveDocuments;
-
-// ~/.blink
-+ (NSString *) blink;
-// ~/.ssh
-+ (NSString *) ssh;
-
-+ (NSURL *) blinkURL;
-+ (NSString *)blinkKeysFile;
-+ (NSString *)blinkHostsFile;
-+ (NSString *)blinkSyncItemsFile;
-+ (NSString *)blinkProfileFile;
-
-+ (NSString *) historyFile;
-+ (NSString *) knownHostsFile;
-+ (NSString *) defaultsFile;
-
-+ (void)linkICloudDriveIfNeeded;
+extern __thread int    thread_opterr,        /* if error message should be printed */
+thread_optind,        /* index into parent argv vector */
+thread_optopt,            /* character checked for validity */
+thread_optreset;        /* reset getopt */
+extern __thread char    * thread_optarg;        /* argument associated with option */
 
 
-@end
+int thread_getopt(int nargc, char * const *nargv, const char *ostr);
+
+#endif /* bk_getopts_h */

@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
 //
 // B L I N K
 //
@@ -29,32 +29,27 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#import <Foundation/Foundation.h>
 
-@interface BlinkPaths : NSObject
+#import <UIKit/UIKit.h>
 
+NS_ASSUME_NONNULL_BEGIN
 
-+ (NSString *) documents;
-+ (NSURL *) documentsURL;
+@interface KeyInput : NSObject
 
-+ (NSString *) iCloudDriveDocuments;
+@property (nonatomic) long long modifierFlags;
+@property (nonatomic) long long keyCode;
+@property (nonatomic) BOOL isKeyDown;
 
-// ~/.blink
-+ (NSString *) blink;
-// ~/.ssh
-+ (NSString *) ssh;
-
-+ (NSURL *) blinkURL;
-+ (NSString *)blinkKeysFile;
-+ (NSString *)blinkHostsFile;
-+ (NSString *)blinkSyncItemsFile;
-+ (NSString *)blinkProfileFile;
-
-+ (NSString *) historyFile;
-+ (NSString *) knownHostsFile;
-+ (NSString *) defaultsFile;
-
-+ (void)linkICloudDriveIfNeeded;
-
++ (KeyInput *)buildKeyInputFrom:(id) event;
 
 @end
+
+
+@interface UIResponder (KeyInput)
+
+- (void)_handleKeyUIEvent:(id) event;
+
+@end
+
+
+NS_ASSUME_NONNULL_END

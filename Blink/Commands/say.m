@@ -32,17 +32,17 @@
 #include <stdio.h>
 #include "ios_system/ios_system.h"
 #include "ios_error.h"
-#include <getopt.h>
+#include "bk_getopts.h"
 #import <AVFoundation/AVFoundation.h>
 #import "MCPSession.h"
 
-@interface SpeechSynthesizerDelegate : NSObject<AVSpeechSynthesizerDelegate>
+@interface BlinkSpeechSynthesizerDelegate : NSObject<AVSpeechSynthesizerDelegate>
 
 - (void)wait;
 
 @end
 
-@implementation SpeechSynthesizerDelegate {
+@implementation BlinkSpeechSynthesizerDelegate {
   dispatch_semaphore_t _sema;
 }
 
@@ -79,7 +79,7 @@ void _sayText(NSString *text, NSNumber* rate, AVSpeechSynthesisVoice *voice) {
     utterance.voice = voice;
   }
   
-  SpeechSynthesizerDelegate *delegate = [[SpeechSynthesizerDelegate alloc] init];
+  BlinkSpeechSynthesizerDelegate *delegate = [[BlinkSpeechSynthesizerDelegate alloc] init];
   AVSpeechSynthesizer *synth = [[AVSpeechSynthesizer alloc] init];
   synth.delegate = delegate;
   [synth speakUtterance:utterance];
@@ -88,7 +88,7 @@ void _sayText(NSString *text, NSNumber* rate, AVSpeechSynthesisVoice *voice) {
 
 
 int say_main(int argc, char *argv[]) {
-  optind = 1;
+  thread_optind = 1;
   
   
   NSString *usage = [@[@"Usage: say [-v voice] [-r rate] [-f file] [message]",
@@ -106,20 +106,20 @@ int say_main(int argc, char *argv[]) {
   BOOL showHelp = NO;
     
   for (;;) {
-    int c = getopt(argc, argv, "v:f:r:h");
+    int c = thread_getopt(argc, argv, "v:f:r:h");
     if (c == -1) {
       break;
     }
     
     switch (c) {
       case 'v':
-        voice = @(optarg);
+        voice = @(thread_optarg);
         break;
       case 'f':
-        file = @(optarg);
+        file = @(thread_optarg);
         break;
       case 'r':
-        rate = @([@(optarg) floatValue]);
+        rate = @([@(thread_optarg) floatValue]);
         break;
       case 'h':
         showHelp = YES;
@@ -135,9 +135,9 @@ int say_main(int argc, char *argv[]) {
     return 0;
   }
   
-  if (optind < argc) {
+  if (thread_optind < argc) {
     NSMutableArray<NSString *> *words = [[NSMutableArray alloc] init];
-    for (int i = optind; i < argc; i++) {
+    for (int i = thread_optind; i < argc; i++) {
       [words addObject:@(argv[i])];
     }
     text = [words componentsJoinedByString:@" "];

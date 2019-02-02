@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
 //
 // B L I N K
 //
@@ -29,32 +29,25 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#import <Foundation/Foundation.h>
 
-@interface BlinkPaths : NSObject
+#import "KeyInput.h"
 
+@implementation KeyInput
 
-+ (NSString *) documents;
-+ (NSURL *) documentsURL;
-
-+ (NSString *) iCloudDriveDocuments;
-
-// ~/.blink
-+ (NSString *) blink;
-// ~/.ssh
-+ (NSString *) ssh;
-
-+ (NSURL *) blinkURL;
-+ (NSString *)blinkKeysFile;
-+ (NSString *)blinkHostsFile;
-+ (NSString *)blinkSyncItemsFile;
-+ (NSString *)blinkProfileFile;
-
-+ (NSString *) historyFile;
-+ (NSString *) knownHostsFile;
-+ (NSString *) defaultsFile;
-
-+ (void)linkICloudDriveIfNeeded;
++ (KeyInput *)buildKeyInputFrom:(id) event {
+  KeyInput *input = [[KeyInput alloc] init];
+  @try {
+    input.keyCode = [[event valueForKey:@"_keyCode"] longLongValue];
+    input.isKeyDown = [[event valueForKey:@"_isKeyDown"] boolValue];
+    input.modifierFlags = [[event valueForKey:@"_modifierFlags"] longLongValue];
+  } @catch (NSException *exception) {
+    
+  } @finally {
+    
+  }
+  
+  return input;
+}
 
 
 @end

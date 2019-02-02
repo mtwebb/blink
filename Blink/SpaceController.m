@@ -77,16 +77,33 @@
 }
 
 #pragma mark Setup
-- (void)loadView
+
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
+
+  if (self.view.window.screen == UIScreen.mainScreen) {
+    UIEdgeInsets insets =  UIEdgeInsetsMake(0, 0, _proposedKBBottomInset, 0);
+    _touchOverlay.frame = UIEdgeInsetsInsetRect(self.view.bounds, insets);
+  } else {
+    _touchOverlay.frame = self.view.bounds;
+  }
+}
+
+- (void)viewSafeAreaInsetsDidChange {
+  [super viewSafeAreaInsetsDidChange];
+  [self updateDeviceSafeMarings:self.view.safeAreaInsets];
+}
+
+- (void)viewDidLoad
 {
-  [super loadView];
+  [super viewDidLoad];
   
   self.view.opaque = YES;
   
   NSDictionary *options = [NSDictionary dictionaryWithObject:
                            [NSNumber numberWithInt:UIPageViewControllerSpineLocationMid]
-                                            forKey:UIPageViewControllerOptionSpineLocationKey];
-
+                                                      forKey:UIPageViewControllerOptionSpineLocationKey];
+  
   _viewportsController = [[UIPageViewController alloc]
                           initWithTransitionStyle:UIPageViewControllerTransitionStyleScroll
                           navigationOrientation:UIPageViewControllerNavigationOrientationHorizontal
@@ -111,28 +128,6 @@
   _termInput = [[TermInput alloc] init];
   [self.view addSubview:_termInput];
   [self registerForNotifications];
-  
-}
-
-- (void)viewDidLayoutSubviews {
-  [super viewDidLayoutSubviews];
-
-  if (self.view.window.screen == UIScreen.mainScreen) {
-    UIEdgeInsets insets =  UIEdgeInsetsMake(0, 0, _proposedKBBottomInset, 0);
-    _touchOverlay.frame = UIEdgeInsetsInsetRect(self.view.bounds, insets);
-  } else {
-    _touchOverlay.frame = self.view.bounds;
-  }
-}
-
-- (void)viewSafeAreaInsetsDidChange {
-  [super viewSafeAreaInsetsDidChange];
-  [self updateDeviceSafeMarings:self.view.safeAreaInsets];
-}
-
-- (void)viewDidLoad
-{
-  [super viewDidLoad];
 
   [self setKbdCommands];
   if (_viewports == nil) {
@@ -409,7 +404,7 @@
   }
   NSInteger idx = [_viewports indexOfObject:viewController];
 
-  if (idx <= 0) {
+  if (idx <= 0 || idx == NSNotFound) {
     return nil;
   }
   return _viewports[idx - 1];
@@ -653,6 +648,7 @@
 - (void)setKbdCommands
 {
   UIKeyModifierFlags modifierFlags = [BKUserConfigurationManager shortCutModifierFlags];
+  UIKeyModifierFlags prevNextShellModifierFlags = [BKUserConfigurationManager shortCutModifierFlagsForNextPrevShell];
   
   _kbdCommands = [[NSMutableArray alloc] initWithObjects:
                   [UIKeyCommand keyCommandWithInput: @"t" modifierFlags:modifierFlags
@@ -661,17 +657,24 @@
                   [UIKeyCommand keyCommandWithInput: @"w" modifierFlags: modifierFlags
                                              action: @selector(closeShell:)
                                discoverabilityTitle: @"Close shell"],
-                  [UIKeyCommand keyCommandWithInput: @"]" modifierFlags: [BKUserConfigurationManager shortCutModifierFlagsForNextPrevShell]
+                  [UIKeyCommand keyCommandWithInput: @"]" modifierFlags: prevNextShellModifierFlags
                                              action: @selector(nextShell:)
                                discoverabilityTitle: @"Next shell"],
-                  [UIKeyCommand keyCommandWithInput: @"[" modifierFlags: [BKUserConfigurationManager shortCutModifierFlagsForNextPrevShell]
+                  [UIKeyCommand keyCommandWithInput: @"[" modifierFlags: prevNextShellModifierFlags
                                              action: @selector(prevShell:)
                                discoverabilityTitle: @"Previous shell"],
+                  // Alternative key commands for keyboard layouts having problems to access
+                  // some of the default ones (e.g. the German keyboard layout)
+                  [UIKeyCommand keyCommandWithInput: UIKeyInputRightArrow modifierFlags: prevNextShellModifierFlags
+                                             action: @selector(nextShell:)],
+                  [UIKeyCommand keyCommandWithInput: UIKeyInputLeftArrow modifierFlags: prevNextShellModifierFlags
+                                             action: @selector(prevShell:)],
+                  
                   
                   [UIKeyCommand keyCommandWithInput: @"o" modifierFlags: modifierFlags
                                              action: @selector(otherScreen:)
                                discoverabilityTitle: @"Other Screen"],
-                  [UIKeyCommand keyCommandWithInput: @"o" modifierFlags: [BKUserConfigurationManager shortCutModifierFlagsForNextPrevShell]
+                  [UIKeyCommand keyCommandWithInput: @"o" modifierFlags: prevNextShellModifierFlags
                                              action: @selector(moveToOtherScreen:)
                                discoverabilityTitle: @"Move shell to other Screen"],
                   [UIKeyCommand keyCommandWithInput: @"," modifierFlags: modifierFlags
